@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
   const [loading, setLoading] = useState(true);
+  const [chatToast, setChatToast] = useState(null);
 
   useEffect(() => {
     const userId = user?.id || user?._id;
@@ -19,6 +20,28 @@ export function AuthProvider({ children }) {
     // so re-join on every reconnect too.
     socket.on("connect", () => joinUserRoom(userId));
     return () => socket.off("connect");
+  }, [user]);
+
+  // Global "you got a chat message" alert. ChatPanel already handles messages
+  // when a conversation is open; this covers every other screen, since the
+  // app has no other notification surface for incoming chat activity.
+  useEffect(() => {
+    const userId = user?.id || user?._id;
+    if (!userId) return;
+
+    const handler = ({ message }) => {
+      const senderId = message?.sender?._id || message?.sender;
+      if (!senderId || senderId === userId) return; // don't toast your own message
+      setChatToast({
+        name: message?.sender?.name || "New message",
+        text: message?.text || "",
+      });
+      window.clearTimeout(handler._t);
+      handler._t = window.setTimeout(() => setChatToast(null), 4000);
+    };
+
+    socket.on("chat_message", handler);
+    return () => socket.off("chat_message", handler);
   }, [user]);
 
   useEffect(() => {
@@ -66,6 +89,29 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{ user, setUser, login, register, logout, loading }}>
       {children}
+      {chatToast && (
+        <div
+          onClick={() => setChatToast(null)}
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            maxWidth: "320px",
+            background: "#0f172a",
+            color: "#fff",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+            zIndex: 9999,
+            cursor: "pointer",
+          }}
+        >
+          <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "2px" }}>
+            {chatToast.name}
+          </div>
+          <div style={{ fontSize: "13px", opacity: 0.85 }}>{chatToast.text}</div>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 }
