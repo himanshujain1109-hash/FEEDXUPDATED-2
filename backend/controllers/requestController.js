@@ -44,10 +44,6 @@ const createRequest = async (req, res, next) => {
 
     const ngo = await Ngo.findOne({ user: req.user._id });
     if (!ngo) return res.status(404).json({ success: false, message: "NGO profile not found" });
-    if (!ngo.verified) {
-      return res.status(403).json({ success: false, message: "Your organization is not verified yet. Please wait for admin approval." });
-    }
-
     const existing = await Request.findOne({ food: foodId, ngo: ngo._id, status: { $in: ["pending", "accepted"] } });
     if (existing) {
       return res.status(400).json({ success: false, message: "You already have an active request for this food" });
