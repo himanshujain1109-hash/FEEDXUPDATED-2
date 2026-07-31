@@ -1,44 +1,20 @@
-const Notification = require("../models/Notification");
+const mongoose = require("mongoose");
 
-// @desc    Get logged-in user's notifications
-// @route   GET /api/notifications
-// @access  Private
-const getNotifications = async (req, res, next) => {
-  try {
-    const notifications = await Notification.find({ receiver: req.user._id }).sort({ createdAt: -1 }).limit(50);
-    const unreadCount = await Notification.countDocuments({ receiver: req.user._id, read: false });
-    res.json({ success: true, count: notifications.length, unreadCount, notifications });
-  } catch (error) {
-    next(error);
-  }
-};
+const notificationSchema = new mongoose.Schema(
+  {
+    receiver: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    title: { type: String, required: true },
+    message: { type: String, required: true },
+    type: {
+      type: String,
+      enum: ["new_food", "new_request", "request_accepted", "request_rejected", "pickup_confirmed", "request_updated", "system"],
+      default: "system",
+    },
+    relatedFood: { type: mongoose.Schema.Types.ObjectId, ref: "Food" },
+    relatedRequest: { type: mongoose.Schema.Types.ObjectId, ref: "Request" },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
 
-// @desc    Mark a notification as read
-// @route   PUT /api/notifications/:id/read
-// @access  Private
-const markAsRead = async (req, res, next) => {
-  try {
-    const notification = await Notification.findOne({ _id: req.params.id, receiver: req.user._id });
-    if (!notification) return res.status(404).json({ success: false, message: "Notification not found" });
-
-    notification.read = true;
-    await notification.save();
-    res.json({ success: true, notification });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Mark all notifications as read
-// @route   PUT /api/notifications/read-all
-// @access  Private
-const markAllAsRead = async (req, res, next) => {
-  try {
-    await Notification.updateMany({ receiver: req.user._id, read: false }, { read: true });
-    res.json({ success: true, message: "All notifications marked as read" });
-  } catch (error) {
-    next(error);
-  }
-};
-
-module.exports = { getNotifications, markAsRead, markAllAsRead };
+module.exports = mongoose.model("Notification", notificationSchema);
