@@ -13,10 +13,6 @@ const createFood = async (req, res, next) => {
     if (!restaurant) {
       return res.status(404).json({ success: false, message: "Restaurant profile not found" });
     }
-    if (!restaurant.verified) {
-      return res.status(403).json({ success: false, message: "Your restaurant is not verified yet. Please wait for admin approval." });
-    }
-
     const {
       title,
       category,
