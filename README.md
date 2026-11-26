@@ -249,18 +249,3 @@ run `npm run seed` in the backend for pre-verified demo accounts.
 5000/5173.
 
 ---
-
-## 10. Explaining this project to judges
-
-If asked *"why this tech stack?"*:
-- **Express** — lightweight, fast to build REST APIs with, minimal boilerplate for a hackathon timeline.
-- **MongoDB** — flexible schema fits evolving requirements (verification documents, optional
-  fields) better than a rigid SQL schema for an MVP built under time pressure.
-- **React + Vite** — fast dev server with hot reload, huge ecosystem, easy to explain and extend live.
-- **Socket.IO** — real-time notifications without building a polling system, which matters for the
-  "restaurant lists food → NGO gets notified instantly" flow that's core to the pitch.
-- **JWT** — stateless auth, no server-side session storage needed, scales simply.
-
-If asked *"what makes this different from other food-donation apps?"* — point to the Freshness
-Ring / freshness score, the automatic competing-request rejection, and the roadmap's smart
-matching and freshness-heuristic ideas.
